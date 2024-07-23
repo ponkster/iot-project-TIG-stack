@@ -3,7 +3,7 @@
 This project is an IoT data processing pipeline that collects, processes, and visualizes data using InfluxDB, Telegraf, Grafana, and custom Python and Go applications.
 
 ## Project Structure
-
+```
 iot-project/
 ├── cmd/
 │ └── metric-replayer/
@@ -18,7 +18,7 @@ iot-project/
 ├── Dockerfile.telegraf
 ├── docker-compose.yml
 └── telegraf2.conf
-
+```
 
 ## Components
 
