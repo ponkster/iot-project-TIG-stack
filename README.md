@@ -7,17 +7,22 @@ This project is an IoT data processing pipeline that collects, processes, and vi
 iot-project/
 ├── cmd/
 │ └── metric-replayer/
-│ └── main.go
+│   └── main.go
+│ └── restamp/
+│   └── main.go
 ├── data/
 │ └── temps-stamped.txt
+├── telegraf/
+│ └── telegraf.conf
 ├── processors/
 │ ├── forecasting.py
 │ └── forecasting2.py
+├── .env
 ├── requirements.txt
 ├── Dockerfile.metric-replayer
 ├── Dockerfile.telegraf
 ├── docker-compose.yml
-└── telegraf2.conf
+└── telegraf.conf
 ```
 
 ## Components
