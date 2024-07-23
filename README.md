@@ -2,6 +2,8 @@
 
 This project is an IoT data processing pipeline that collects, processes, and visualizes data using InfluxDB, Telegraf, Grafana, and custom Python and Go applications.
 
+This project is the combination from [Huntabyte's tig-stack](https://github.com/huntabyte/tig-stack) and [this anomaly detection example](https://github.com/InfluxCommunity/tg-brew-anomaly).
+
 ## Project Structure
 ```
 iot-project/
@@ -31,6 +33,7 @@ iot-project/
 - **Telegraf**: A server agent to collect and report metrics.
 - **Grafana**: A visualization tool to create dashboards and graphs.
 - **Go Application (`metric-replayer`)**: A custom Go application to process data.
+- **Go Application (`restamp`)**: This program assigns new timestamps to the influx line protocol data in data/temps.
 - **Python Scripts (`forecasting.py`, `forecasting2.py`)**: Scripts for forecasting and data analysis.
 
 ## Setup
@@ -39,6 +42,8 @@ iot-project/
 
 - Docker
 - Docker Compose
+- Golang version 1.22 (1.20 is okay)
+- Python version 3.11
 
 ### Environment Variables
 
@@ -47,16 +52,16 @@ Create a `.env` file in the root directory with the following content:
 ```env
 DOCKER_INFLUXDB_INIT_MODE=setup
 DOCKER_INFLUXDB_INIT_USERNAME=aqua_user_db
-DOCKER_INFLUXDB_INIT_PASSWORD=donletmidonletmidon_memelusin_memelo
-DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=Th1$!sth3T0k3n^
+DOCKER_INFLUXDB_INIT_PASSWORD=<secret_pass>
+DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<secret_token>
 DOCKER_INFLUXDB_INIT_ORG=aqua_org
-DOCKER_INFLUXDB_INIT_BUCKET=aqua_sensor_bucket
-INFLUX_TOKEN=qsgWkgT3CwI4lyQaLh0aHDhSdi2zc4xhvNGHtBzu-1jOGSaEBxqQ9DCqDvui4EKgw_vs-5r5s1_RWrPwG14gDQ==
+DOCKER_INFLUXDB_INIT_BUCKET=<make_it_like_brew>
+INFLUX_TOKEN=<secret_token>
 INFLUX_HOST=localhost
 DOCKER_INFLUXDB_INIT_RETENTION=4d
 DOCKER_INFLUXDB_INIT_PORT=8086
 DOCKER_INFLUXDB_INIT_HOST=influxdb
-TELEGRAF_CFG_PATH=./telegraf2.conf
+TELEGRAF_CFG_PATH=./telegraf.conf
 GRAFANA_PORT=3000
 ```
 
@@ -66,12 +71,54 @@ GRAFANA_PORT=3000
 
 
 ```shell
-git clone <repository-url>
-cd iot-project
+git clone https://github.com/ponkster/iot-project-TIG-stack.git
+cd iot-project-TIG-stack
 ```
 
-### 2. Build and start the service
+### 2. Build `restamp` binary
 
 ```shell
-docker-compose up --build
+go build ./cmd/restamp
+./restamp --help # should see usage
 ```
+
+### 3. Assign data to the current timestamps.
+
+This will amend the temperature data with current timestamps and store it to a new file.
+You may want to repeat this step later to replay the data with new, current, timestamps.
+
+```shell
+    gunzip --stdout ./data/temps.txt.gz | ./restamp -filename - > ./data/temps-stamped.txt
+```
+
+You can verify it worked with this command:
+```shell
+   head -n3 ./data/temps-stamped.txt
+```
+You should see 3 lines of temperature data that look something like this
+
+    temperature,brew=haze_v5 temperature=18.8 1596602228666886000
+    temperature,brew=haze_v5 temperature=18.8 1596602229666886000
+    temperature,brew=haze_v5 temperature=18.9 1596602230666886000
+
+### 4. Build the application
+
+If you want to inspect and monitor what is going on, run the script below:
+
+```shell
+docker compose up --build
+```
+
+Or you want to run it transparently
+
+```shell
+    docker compose up -d
+```
+
+### 5. Access Services:
+
+   - **InfluxDB**:http://localhost:8086
+   - **Grafana**:http://localhost:3000 (default credentials: `admin` / `admin`)
+
+## Licenses
+This project is licensed under the MIT License. See the LICENSE file for more details.
