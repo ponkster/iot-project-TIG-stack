@@ -1,0 +1,27 @@
+# Use the official Golang image to create a build artifact.
+FROM golang:1.22 AS builder
+
+WORKDIR /app
+
+# Copy the go mod and sum files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
+COPY cmd/metric-replayer ./cmd/metric-replayer
+
+# Copy the data
+COPY data/ /data
+
+# Build the application
+RUN go build -o /metric-replayer ./cmd/metric-replayer
+
+# Use a minimal base image
+FROM alpine:latest
+
+# Copy the executable
+COPY --from=builder /metric-replayer /usr/local/bin/metric-replayer
+
+# Command to run the executable
+CMD ["metric-replayer"]
+

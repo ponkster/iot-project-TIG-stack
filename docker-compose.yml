@@ -1,0 +1,61 @@
+services:
+  influxdb:
+    image: influxdb:2.7.7
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2:rw
+    env_file:
+      - .env
+    entrypoint: ["./entrypoint.sh"]
+    restart: on-failure:10
+    ports:
+      - ${DOCKER_INFLUXDB_INIT_PORT}:8086
+    networks:
+      - influxdb_network
+
+  telegraf:
+    image: telegraf:1.31.1
+    build:
+      context: .
+      dockerfile: Dockerfile.telegraf
+    volumes:
+      - ${TELEGRAF_CFG_PATH}:/etc/telegraf/telegraf.conf:rw
+      - ./metric-replayer:/usr/local/bin/metric-replayer
+      - ./processors:/usr/local/bin/processors
+      - ./requirements.txt:/requirements.txt
+      - ./data:/data # mount the data directory
+    env_file:
+      - .env
+    depends_on:
+      - influxdb
+    networks:
+      - influxdb_network
+
+  grafana:
+    image: grafana/grafana-oss:11.0.1
+    volumes:
+      - grafana-storage:/var/lib/grafana:rw
+    depends_on:
+      - influxdb
+    ports:
+      - ${GRAFANA_PORT}:3000
+    networks:
+      - influxdb_network
+
+  metric-replayer:
+    build:
+      context: .
+      dockerfile: Dockerfile.metric-replayer
+    container_name: metric-replayer
+    depends_on:
+      - telegraf
+    networks:
+      - influxdb_network
+
+volumes:
+  grafana-storage:
+  influxdb-storage:
+
+networks:
+  influxdb_network:
+    driver: bridge
+
