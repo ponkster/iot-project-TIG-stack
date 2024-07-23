@@ -50,19 +50,41 @@ iot-project/
 Create a `.env` file in the root directory with the following content:
 
 ```env
-DOCKER_INFLUXDB_INIT_MODE=setup
-DOCKER_INFLUXDB_INIT_USERNAME=aqua_user_db
-DOCKER_INFLUXDB_INIT_PASSWORD=<secret_pass>
-DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<secret_token>
-DOCKER_INFLUXDB_INIT_ORG=aqua_org
-DOCKER_INFLUXDB_INIT_BUCKET=<make_it_like_brew>
-INFLUX_TOKEN=<secret_token>
-INFLUX_HOST=localhost
+## Environment variables used during the setup and operation of the stack
+#
+
+# Primary InfluxDB admin/superuser credentials
+#
+DOCKER_INFLUXDB_INIT_USERNAME=<iot_user_db>
+DOCKER_INFLUXDB_INIT_PASSWORD=<secret_influxdb_admin_password>
+DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=<secret_admin_token>
+
+# Primary InfluxDB organization & bucket definitions
+#
+DOCKER_INFLUXDB_INIT_ORG=<your_org>
+DOCKER_INFLUXDB_INIT_BUCKET=<your_bucket_name>
+INFLUX_TOKEN=<token_created_from_influxdb_admin>
+INFLUX_HOST=http://influxdb:8086
+# Primary InfluxDB bucket retention period
+#
+# NOTE: Valid units are nanoseconds (ns), microseconds(us), milliseconds (ms)
+# seconds (s), minutes (m), hours (h), days (d), and weeks (w).
 DOCKER_INFLUXDB_INIT_RETENTION=4d
+
+
+# InfluxDB port & hostname definitions
+#
 DOCKER_INFLUXDB_INIT_PORT=8086
 DOCKER_INFLUXDB_INIT_HOST=influxdb
+
+# Telegraf configuration file
+#
+# Will be mounted to container and used as telegraf configuration
 TELEGRAF_CFG_PATH=./telegraf.conf
+
+# Grafana port definition
 GRAFANA_PORT=3000
+
 ```
 
 ## Build and Run
